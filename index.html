@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Keuangan</title>
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fb;
+      color: #2c3e50;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #3498db, #8e44ad);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      border-radius: 0 0 25px 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+    header h1 {
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    header p {
+      font-size: 15px;
+      opacity: 0.9;
+    }
+
+    /* Summary Cards */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 30px 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 25px;
+      text-align: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    .card .icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .card p {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .income .icon { color: #27ae60; }
+    .expense .icon { color: #e74c3c; }
+    .balance .icon { color: #3498db; }
+
+    /* Navigation Buttons */
+    .nav-buttons {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .nav-buttons a {
+      display: inline-block;
+      margin: 10px;
+      padding: 14px 28px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 600;
+      color: white;
+      background: linear-gradient(135deg, #3498db, #2ecc71);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
+    }
+    .nav-buttons a:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>📊 Dashboard Keuangan</h1>
+    <p>Pantau arus kas Anda dengan desain modern & elegan</p>
+  </header>
+
+  <!-- Summary -->
+  <section class="summary">
+    <div class="card income">
+      <div class="icon">💰</div>
+      <h2>Pemasukan</h2>
+      <p>Rp <span id="totalPemasukan">0</span></p>
+    </div>
+    <div class="card expense">
+      <div class="icon">💸</div>
+      <h2>Pengeluaran</h2>
+      <p>Rp <span id="totalPengeluaran">0</span></p>
+    </div>
+    <div class="card balance">
+      <div class="icon">📌</div>
+      <h2>Saldo</h2>
+      <p>Rp <span id="saldo">0</span></p>
+    </div>
+  </section>
+
+  <!-- Navigation -->
+  <div class="nav-buttons">
+    <a href="pemasukan.html">➕ Catat Pemasukan</a>
+    <a href="pengeluaran.html">➖ Catat Pengeluaran</a>
+    <a href="laporan.html">📑 Lihat Laporan</a>
+  </div>
+
+  <!-- Script -->
+  <script>
+    let pemasukan = JSON.parse(localStorage.getItem("pemasukan")) || [];
+    let pengeluaran = JSON.parse(localStorage.getItem("pengeluaran")) || [];
+
+    let totalPemasukan = pemasukan.reduce((a,b)=>a+Number(b.jumlah),0);
+    let totalPengeluaran = pengeluaran.reduce((a,b)=>a+Number(b.jumlah),0);
+    let saldo = totalPemasukan - totalPengeluaran;
+
+    document.getElementById("totalPemasukan").textContent = totalPemasukan.toLocaleString();
+    document.getElementById("totalPengeluaran").textContent = totalPengeluaran.toLocaleString();
+    document.getElementById("saldo").textContent = saldo.toLocaleString();
+  </script>
+</body>
+</html>

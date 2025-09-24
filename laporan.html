@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laporan Keuangan</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f7fb;
+      color: #2c3e50;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(135deg, #2ecc71, #3498db);
+      color: white;
+      padding: 30px 20px;
+      text-align: center;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: white;
+      border-radius: 14px;
+      padding: 25px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    }
+
+    .summary {
+      display: flex;
+      justify-content: space-around;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .summary div {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 12px;
+      width: 30%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .summary h2 {
+      margin-bottom: 5px;
+      font-size: 18px;
+    }
+
+    .filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    select {
+      padding: 8px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin: 0 5px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+    }
+
+    th {
+      background: #3498db;
+      color: white;
+    }
+
+    tr:nth-child(even) { background: #f9f9f9; }
+    tr:hover { background: #f1f1f1; }
+
+    .buttons {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .buttons button, .buttons a {
+      padding: 10px 18px;
+      margin: 5px;
+      border-radius: 25px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #3498db, #2ecc71);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .buttons button:hover, .buttons a:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      background: #e74c3c;
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: 0.3s;
+    }
+    .back:hover { background: #c0392b; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📑 Laporan Keuangan</h1>
+    <p>Ringkasan transaksi pemasukan & pengeluaran Anda</p>
+  </header>
+
+  <div class="container" id="laporan">
+    <!-- Ringkasan -->
+    <div class="summary">
+      <div>
+        <h2>Pemasukan</h2>
+        <p>Rp <span id="totalPemasukan">0</span></p>
+      </div>
+      <div>
+        <h2>Pengeluaran</h2>
+        <p>Rp <span id="totalPengeluaran">0</span></p>
+      </div>
+      <div>
+        <h2>Saldo</h2>
+        <p>Rp <span id="saldo">0</span></p>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filters">
+      <label for="bulan">Bulan:</label>
+      <select id="bulan">
+        <option value="">Semua</option>
+        <option value="0">Januari</option>
+        <option value="1">Februari</option>
+        <option value="2">Maret</option>
+        <option value="3">April</option>
+        <option value="4">Mei</option>
+        <option value="5">Juni</option>
+        <option value="6">Juli</option>
+        <option value="7">Agustus</option>
+        <option value="8">September</option>
+        <option value="9">Oktober</option>
+        <option value="10">November</option>
+        <option value="11">Desember</option>
+      </select>
+
+      <label for="tahun">Tahun:</label>
+      <select id="tahun"></select>
+      <button onclick="filterData()">Filter</button>
+    </div>
+
+    <!-- Tabel -->
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Keterangan</th>
+          <th>Kategori</th>
+          <th>Jumlah</th>
+          <th>Jenis</th>
+        </tr>
+      </thead>
+      <tbody id="tabelLaporan"></tbody>
+    </table>
+
+    <!-- Tombol Ekspor -->
+    <div class="buttons">
+      <button onclick="exportExcel()">📊 Export Excel</button>
+      <button onclick="exportPDF()">📄 Export PDF</button>
+    </div>
+
+    <!-- Grafik -->
+    <canvas id="chartLaporan" height="120"></canvas>
+  </div>
+
+  <!-- Tombol kembali -->
+  <div style="text-align:center; margin:20px;">
+    <a href="index.html" class="back">⬅ Kembali</a>
+  </div>
+
+  <script>
+    let pemasukan = JSON.parse(localStorage.getItem("pemasukan")) || [];
+    let pengeluaran = JSON.parse(localStorage.getItem("pengeluaran")) || [];
+    let semuaData = [...pemasukan.map(d => ({...d, jenis: "Pemasukan"})), 
+                     ...pengeluaran.map(d => ({...d, jenis: "Pengeluaran"}))];
+
+    const tahunSelect = document.getElementById("tahun");
+    const now = new Date().getFullYear();
+    for(let t=now; t>=2020; t--){
+      let opt = document.createElement("option");
+      opt.value = t; opt.textContent = t;
+      tahunSelect.appendChild(opt);
+    }
+
+    function renderLaporan(data) {
+      let tbody = document.getElementById("tabelLaporan");
+      tbody.innerHTML = "";
+      data.forEach(item=>{
+        let tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${item.tanggal}</td>
+          <td>${item.keterangan || "-"}</td>
+          <td>${item.kategori || "-"}</td>
+          <td>Rp ${Number(item.jumlah).toLocaleString()}</td>
+          <td>${item.jenis}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      let totalPemasukan = data.filter(d=>d.jenis==="Pemasukan").reduce((a,b)=>a+Number(b.jumlah),0);
+      let totalPengeluaran = data.filter(d=>d.jenis==="Pengeluaran").reduce((a,b)=>a+Number(b.jumlah),0);
+      let saldo = totalPemasukan - totalPengeluaran;
+
+      document.getElementById("totalPemasukan").textContent = totalPemasukan.toLocaleString();
+      document.getElementById("totalPengeluaran").textContent = totalPengeluaran.toLocaleString();
+      document.getElementById("saldo").textContent = saldo.toLocaleString();
+
+      renderChart(totalPemasukan, totalPengeluaran);
+    }
+
+    function filterData(){
+      let bulan = document.getElementById("bulan").value;
+      let tahun = document.getElementById("tahun").value;
+
+      let data = semuaData.filter(d=>{
+        let tgl = new Date(d.tanggal);
+        return (bulan==="" || tgl.getMonth()==bulan) && 
+               (tahun==="" || tgl.getFullYear()==tahun);
+      });
+
+      renderLaporan(data);
+    }
+
+    function exportExcel(){
+      let ws = XLSX.utils.json_to_sheet(semuaData);
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan");
+      XLSX.writeFile(wb, "laporan_keuangan.xlsx");
+    }
+
+    function exportPDF(){
+      let element = document.getElementById("laporan");
+      html2pdf().from(element).save("laporan_keuangan.pdf");
+    }
+
+    let chart;
+    function renderChart(income, expense){
+      let ctx = document.getElementById("chartLaporan").getContext("2d");
+      if(chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: ["Pemasukan", "Pengeluaran"],
+          datasets: [{
+            data: [income, expense],
+            backgroundColor: ["#27ae60","#e74c3c"]
+          }]
+        }
+      });
+    }
+
+    renderLaporan(semuaData);
+  </script>
+</body>
+</html>

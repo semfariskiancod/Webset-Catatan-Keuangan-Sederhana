@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pemasukan</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <h1><i class="fa-solid fa-sack-dollar"></i> Catat Pemasukan</h1>
+    <p>Tambahkan sumber pemasukan harian Anda</p>
+  </header>
+
+  <!-- Form Pemasukan -->
+  <main class="form-container">
+    <div class="form-card">
+      <h2><i class="fa-solid fa-plus-circle"></i> Tambah Data</h2>
+      <form id="form">
+        <input type="date" id="date" required>
+        <input type="text" id="text" placeholder="Keterangan (misal: Gaji, Bonus)" required>
+        <input type="number" id="amount" placeholder="Jumlah (Rp)" required>
+        <button type="submit" class="btn-submit">
+          <i class="fa-solid fa-check"></i> Simpan
+        </button>
+      </form>
+    </div>
+
+    <!-- Tabel Data -->
+    <div class="table-card">
+      <h2><i class="fa-solid fa-list"></i> Daftar Pemasukan</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Keterangan</th>
+            <th>Jumlah</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="list"></tbody>
+      </table>
+      <h3 class="total-box">Total Pemasukan: Rp <span id="total">0</span></h3>
+    </div>
+  </main>
+
+  <!-- Tombol kembali -->
+  <a href="index.html" class="back-floating" title="Kembali ke Dashboard">
+    <i class="fa-solid fa-arrow-left"></i>
+  </a>
+
+  <script>
+    const form = document.getElementById("form");
+    const date = document.getElementById("date");
+    const text = document.getElementById("text");
+    const amount = document.getElementById("amount");
+    const list = document.getElementById("list");
+    const totalView = document.getElementById("total");
+
+    let data = JSON.parse(localStorage.getItem("pemasukan")) || [];
+    let total = 0;
+
+    function render() {
+      list.innerHTML = "";
+      total = 0;
+      data.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.date}</td>
+          <td>${item.text}</td>
+          <td>Rp ${item.amount.toLocaleString("id-ID")}</td>
+          <td><button class="btn-delete" onclick="hapus(${index})"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        list.appendChild(row);
+        total += item.amount;
+      });
+      totalView.textContent = total.toLocaleString("id-ID");
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      data.push({ 
+        date: date.value, 
+        text: text.value, 
+        amount: parseInt(amount.value) 
+      });
+      localStorage.setItem("pemasukan", JSON.stringify(data));
+      render();
+      form.reset();
+    });
+
+    function hapus(index) {
+      data.splice(index, 1);
+      localStorage.setItem("pemasukan", JSON.stringify(data));
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>

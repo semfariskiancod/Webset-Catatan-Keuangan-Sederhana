@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pengeluaran</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header expense-header">
+    <h1><i class="fa-solid fa-wallet"></i> Catat Pengeluaran</h1>
+    <p>Tambahkan catatan pengeluaran harian Anda</p>
+  </header>
+
+  <!-- Form Pengeluaran -->
+  <main class="form-container">
+    <div class="form-card">
+      <h2><i class="fa-solid fa-minus-circle"></i> Tambah Data</h2>
+      <form id="form">
+        <input type="date" id="date" required>
+        <input type="text" id="text" placeholder="Keterangan (misal: Makan, Transport)" required>
+        <input type="number" id="amount" placeholder="Jumlah (Rp)" required>
+        <button type="submit" class="btn-submit expense-btn">
+          <i class="fa-solid fa-check"></i> Simpan
+        </button>
+      </form>
+    </div>
+
+    <!-- Tabel Data -->
+    <div class="table-card">
+      <h2><i class="fa-solid fa-list"></i> Daftar Pengeluaran</h2>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Tanggal</th>
+            <th>Keterangan</th>
+            <th>Jumlah</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="list"></tbody>
+      </table>
+      <h3 class="total-box expense-total">Total Pengeluaran: Rp <span id="total">0</span></h3>
+    </div>
+  </main>
+
+  <!-- Tombol kembali -->
+  <a href="index.html" class="back-floating" title="Kembali ke Dashboard">
+    <i class="fa-solid fa-arrow-left"></i>
+  </a>
+
+  <script>
+    const form = document.getElementById("form");
+    const date = document.getElementById("date");
+    const text = document.getElementById("text");
+    const amount = document.getElementById("amount");
+    const list = document.getElementById("list");
+    const totalView = document.getElementById("total");
+
+    let data = JSON.parse(localStorage.getItem("pengeluaran")) || [];
+    let total = 0;
+
+    function render() {
+      list.innerHTML = "";
+      total = 0;
+      data.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.date}</td>
+          <td>${item.text}</td>
+          <td>Rp ${item.amount.toLocaleString("id-ID")}</td>
+          <td><button class="btn-delete" onclick="hapus(${index})"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        list.appendChild(row);
+        total += item.amount;
+      });
+      totalView.textContent = total.toLocaleString("id-ID");
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      data.push({ 
+        date: date.value, 
+        text: text.value, 
+        amount: parseInt(amount.value) 
+      });
+      localStorage.setItem("pengeluaran", JSON.stringify(data));
+      render();
+      form.reset();
+    });
+
+    function hapus(index) {
+      data.splice(index, 1);
+      localStorage.setItem("pengeluaran", JSON.stringify(data));
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
